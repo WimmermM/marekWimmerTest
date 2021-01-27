@@ -29,18 +29,17 @@ public class JavaScriptFramework {
 	private String version;
 
 	@Column(nullable = false, length = 30)
-	private LocalDate deprecationDate;
+	private String deprecationDate;
 
 
 	@Column(nullable = false, length = 30)
-	private int hypeLevel;
+	private String hypeLevel;
 
 	public JavaScriptFramework() {
 	}
 
-	public JavaScriptFramework(String name) {
+	public JavaScriptFramework(String name, String version, String deprecationDate, String hypeLevel) {
 	}
-
 
 	public Long getId() {
 		return id;
@@ -66,6 +65,21 @@ public class JavaScriptFramework {
 		this.version = version;
 	}
 
+	public String getDeprecationDate() {
+		return deprecationDate;
+	}
+
+	public void setDeprecationDate(String deprecationDate) {
+		this.deprecationDate = deprecationDate;
+	}
+
+	public String getHypeLevel() {
+		return hypeLevel;
+	}
+
+	public void setHypeLevel(String hypeLevel) {
+		this.hypeLevel = hypeLevel;
+	}
 
 	@Override
 	public String toString() {

@@ -2,12 +2,14 @@ package com.etnetera.hr;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.etnetera.hr.service.JavaScriptFrameworkService;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +45,12 @@ public class JavaScriptFrameworkTests {
 	@Autowired
 	private JavaScriptFrameworkRepository repository;
 
+	@Autowired
+	JavaScriptFrameworkService service;
+
 	private void prepareData() throws Exception {
-		JavaScriptFramework react = new JavaScriptFramework("ReactJS");
-		JavaScriptFramework vue = new JavaScriptFramework("Vue.js");
+		JavaScriptFramework react = new JavaScriptFramework("ReactJS", "1.0.1", "12.3.2022", "10");
+		JavaScriptFramework vue = new JavaScriptFramework("Vue.js","1.0.0", "12.3.2024", "8");
 		
 		repository.save(react);
 		repository.save(vue);
@@ -79,6 +84,38 @@ public class JavaScriptFrameworkTests {
 			.andExpect(jsonPath("$.errors[0].field", is("name")))
 			.andExpect(jsonPath("$.errors[0].message", is("Size")));
 		
+	}
+
+	@Test
+	public void deleteFramework() throws Exception {
+		JavaScriptFramework framework = new JavaScriptFramework();
+		framework.setId(1L);
+		framework.setName("test");
+		framework.setDeprecationDate("22.10.2222");
+		framework.setVersion("1.0.0");
+		framework.setHypeLevel("5");
+		repository.save(framework);
+		mockMvc.perform(post("/frameworks/delete/1").contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isOk());
+
+//		mockMvc.perform(post("/frameworks/delete/2").contentType(MediaType.APPLICATION_JSON_UTF8))
+//				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors", hasSize(1)));
+	}
+
+
+	@Test
+	public void  addFramework() throws Exception {
+		JavaScriptFramework framework = new JavaScriptFramework();
+		framework.setName("test");
+		framework.setDeprecationDate("22.10.2222");
+		framework.setVersion("1.0.0");
+		framework.setHypeLevel("5");
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+		ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+		String requestJson=ow.writeValueAsString(framework);
+		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestJson)).andExpect(status().isOk());
 	}
 	
 }
