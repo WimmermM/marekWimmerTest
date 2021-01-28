@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +24,9 @@ import com.etnetera.hr.data.JavaScriptFramework;
 import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 /**
@@ -49,8 +53,8 @@ public class JavaScriptFrameworkTests {
 	JavaScriptFrameworkService service;
 
 	private void prepareData() throws Exception {
-		JavaScriptFramework react = new JavaScriptFramework("ReactJS", "1.0.1", "12.3.2022", "10");
-		JavaScriptFramework vue = new JavaScriptFramework("Vue.js","1.0.0", "12.3.2024", "8");
+		JavaScriptFramework react = new JavaScriptFramework("ReactJS", "1.0.1", "cas", new BigDecimal(20));
+		JavaScriptFramework vue = new JavaScriptFramework("Vue.js","1.0.0", "cas", new BigDecimal(20));
 		
 		repository.save(react);
 		repository.save(vue);
@@ -71,14 +75,14 @@ public class JavaScriptFrameworkTests {
 	@Test
 	public void addFrameworkInvalid() throws JsonProcessingException, Exception {
 		JavaScriptFramework framework = new JavaScriptFramework();
-		mockMvc.perform(post("/frameworks").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
+		mockMvc.perform(get("/frameworks").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.errors", hasSize(1)))
 				.andExpect(jsonPath("$.errors[0].field", is("name")))
 				.andExpect(jsonPath("$.errors[0].message", is("NotEmpty")));
 		
 		framework.setName("verylongnameofthejavascriptframeworkjavaisthebest");
-		mockMvc.perform(post("/frameworks").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
+		mockMvc.perform(get("/frameworks").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.errors", hasSize(1)))
 			.andExpect(jsonPath("$.errors[0].field", is("name")))
@@ -91,31 +95,40 @@ public class JavaScriptFrameworkTests {
 		JavaScriptFramework framework = new JavaScriptFramework();
 		framework.setId(1L);
 		framework.setName("test");
-		framework.setDeprecationDate("22.10.2222");
+		framework.setDeprecationDate("String");
 		framework.setVersion("1.0.0");
-		framework.setHypeLevel("5");
+		framework.setHypeLevel(new BigDecimal(20));
 		repository.save(framework);
+
 		mockMvc.perform(post("/frameworks/delete/1").contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(status().isOk());
-
-//		mockMvc.perform(post("/frameworks/delete/2").contentType(MediaType.APPLICATION_JSON_UTF8))
-//				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors", hasSize(1)));
 	}
-
 
 	@Test
 	public void  addFramework() throws Exception {
 		JavaScriptFramework framework = new JavaScriptFramework();
 		framework.setName("test");
-		framework.setDeprecationDate("22.10.2222");
+		framework.setDeprecationDate("casd");
 		framework.setVersion("1.0.0");
-		framework.setHypeLevel("5");
+		framework.setHypeLevel(new BigDecimal(20));
 
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
-		ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-		String requestJson=ow.writeValueAsString(framework);
-		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestJson)).andExpect(status().isOk());
+		String json = mapper.writeValueAsString(framework);
+		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON).content(json))
+				.andExpect(status().isCreated());
 	}
-	
+
+	@Test
+	public void findFramework() throws Exception {
+		JavaScriptFramework framework = new JavaScriptFramework();
+		framework.setId(1L);
+		framework.setName("test");
+		framework.setDeprecationDate("cas");
+		framework.setVersion("1.0.0");
+		framework.setHypeLevel(new BigDecimal(20));
+		repository.save(framework);
+
+		mockMvc.perform(post("/frameworks/find/1").contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isOk());
+	}
 }

@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
@@ -33,12 +34,12 @@ public class JavaScriptFramework {
 
 
 	@Column(nullable = false, length = 30)
-	private String hypeLevel;
+	private BigDecimal hypeLevel;
 
 	public JavaScriptFramework() {
 	}
 
-	public JavaScriptFramework(String name, String version, String deprecationDate, String hypeLevel) {
+	public JavaScriptFramework(String name, String version, String deprecationDate, BigDecimal hypeLevel) {
 	}
 
 	public Long getId() {
@@ -73,17 +74,17 @@ public class JavaScriptFramework {
 		this.deprecationDate = deprecationDate;
 	}
 
-	public String getHypeLevel() {
+	public BigDecimal getHypeLevel() {
 		return hypeLevel;
 	}
 
-	public void setHypeLevel(String hypeLevel) {
+	public void setHypeLevel(BigDecimal hypeLevel) {
 		this.hypeLevel = hypeLevel;
 	}
 
 	@Override
 	public String toString() {
-		return "JavaScriptFramework [id=" + id + ", name=" + name + "]";
+		return "JavaScriptFramework [id=" + id + ", name=" + name + ", version]";
 	}
 
 }

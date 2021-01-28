@@ -5,6 +5,8 @@ import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Component
@@ -18,8 +20,8 @@ public class JavaScriptFrameworkService {
     }
 
 
-    public JavaScriptFramework addFramework(String name, String version, String deprecationDate, String hypeLevel ){
-        return new JavaScriptFramework(name, version, deprecationDate, hypeLevel);
+    public void addFramework(String name, String version, String deprecationDate, BigDecimal hypeLevel ){
+        repository.save(new JavaScriptFramework(name, version, deprecationDate, hypeLevel));
     }
 
     public void updateFramework (Long id) {
@@ -35,8 +37,6 @@ public class JavaScriptFrameworkService {
     public Optional<JavaScriptFramework> findById(Long id){
         return repository.findById(id);
     }
-
-
 
 
 }
