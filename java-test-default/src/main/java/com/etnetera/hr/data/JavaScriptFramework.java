@@ -1,5 +1,10 @@
 package com.etnetera.hr.data;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,6 +22,10 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  */
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class JavaScriptFramework {
 
 	@Id
@@ -32,59 +41,13 @@ public class JavaScriptFramework {
 	@Column(nullable = false, length = 30)
 	private String deprecationDate;
 
-
 	@Column(nullable = false, length = 30)
-	private BigDecimal hypeLevel;
+	private int hypeLevel;
 
-	public JavaScriptFramework() {
-	}
-
-	public JavaScriptFramework(String name, String version, String deprecationDate, BigDecimal hypeLevel) {
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
+	public JavaScriptFramework(String name, String version, String deprecationDate, int hypeLevel) {
 		this.name = name;
-	}
-
-	public String getVersion() {
-		return version;
-	}
-
-	public void setVersion(String version) {
 		this.version = version;
-	}
-
-	public String getDeprecationDate() {
-		return deprecationDate;
-	}
-
-	public void setDeprecationDate(String deprecationDate) {
 		this.deprecationDate = deprecationDate;
-	}
-
-	public BigDecimal getHypeLevel() {
-		return hypeLevel;
-	}
-
-	public void setHypeLevel(BigDecimal hypeLevel) {
 		this.hypeLevel = hypeLevel;
 	}
-
-	@Override
-	public String toString() {
-		return "JavaScriptFramework [id=" + id + ", name=" + name + ", version]";
-	}
-
 }

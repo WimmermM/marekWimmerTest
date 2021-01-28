@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.etnetera.hr.service.JavaScriptFrameworkService;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +50,23 @@ public class JavaScriptFrameworkTests {
 	@Autowired
 	private JavaScriptFrameworkRepository repository;
 
-	@Autowired
-	JavaScriptFrameworkService service;
+
+	public static JavaScriptFramework framework;
+
+	@BeforeClass
+	public static void prepare() {
+		 framework = JavaScriptFramework.builder()
+				.hypeLevel(1)
+				 .deprecationDate("ssdfs")
+				 .name("prepare")
+				 .version("10")
+				 .build();
+	}
+
 
 	private void prepareData() throws Exception {
-		JavaScriptFramework react = new JavaScriptFramework("ReactJS", "1.0.1", "cas", new BigDecimal(20));
-		JavaScriptFramework vue = new JavaScriptFramework("Vue.js","1.0.0", "cas", new BigDecimal(20));
+		JavaScriptFramework react = new JavaScriptFramework("ReactJS", "1.0.1", "cas", 20);
+		JavaScriptFramework vue = new JavaScriptFramework("Vue.js","1.0.0", "cas",20);
 		
 		repository.save(react);
 		repository.save(vue);
@@ -92,43 +104,29 @@ public class JavaScriptFrameworkTests {
 
 	@Test
 	public void deleteFramework() throws Exception {
-		JavaScriptFramework framework = new JavaScriptFramework();
-		framework.setId(1L);
-		framework.setName("test");
-		framework.setDeprecationDate("String");
-		framework.setVersion("1.0.0");
-		framework.setHypeLevel(new BigDecimal(20));
-		repository.save(framework);
-
-		mockMvc.perform(post("/frameworks/delete/1").contentType(MediaType.APPLICATION_JSON_UTF8))
+		prepareData();
+		mockMvc.perform(delete("/frameworks/delete/1").contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(status().isOk());
 	}
 
 	@Test
-	public void  addFramework() throws Exception {
-		JavaScriptFramework framework = new JavaScriptFramework();
-		framework.setName("test");
-		framework.setDeprecationDate("casd");
-		framework.setVersion("1.0.0");
-		framework.setHypeLevel(new BigDecimal(20));
-
-		ObjectMapper mapper = new ObjectMapper();
-		String json = mapper.writeValueAsString(framework);
-		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON).content(json))
-				.andExpect(status().isCreated());
+	public void addFramework() throws Exception {
+		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
+				.andExpect(status().isOk());
 	}
 
 	@Test
 	public void findFramework() throws Exception {
-		JavaScriptFramework framework = new JavaScriptFramework();
-		framework.setId(1L);
-		framework.setName("test");
-		framework.setDeprecationDate("cas");
-		framework.setVersion("1.0.0");
-		framework.setHypeLevel(new BigDecimal(20));
-		repository.save(framework);
-
+		prepareData();
 		mockMvc.perform(post("/frameworks/find/1").contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void updateFramework() throws Exception {
+		prepareData();
+		framework.setName("testUpdate");
+		mockMvc.perform(put("/frameworks/delete/1").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
 				.andExpect(status().isOk());
 	}
 }
