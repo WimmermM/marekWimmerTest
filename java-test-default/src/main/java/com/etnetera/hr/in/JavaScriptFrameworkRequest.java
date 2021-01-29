@@ -6,8 +6,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class JavaScriptFrameworkRequest {
-    private Long id;
+    private String name;
     private String version;
     private String deprecationDate;
     private int hypeLevel;
+
 }

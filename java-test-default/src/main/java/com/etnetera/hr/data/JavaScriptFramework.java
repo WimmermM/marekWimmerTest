@@ -5,14 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -29,25 +26,16 @@ import java.util.concurrent.ThreadLocalRandom;
 public class JavaScriptFramework {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(nullable = false, length = 30)
 	private String name;
 
-	@Column(nullable = false, length = 30)
-	private String version;
+	@OneToMany(mappedBy = "framework", orphanRemoval = true)
+	private List<FrameworkVersion> versions;
 
-	@Column(nullable = false, length = 30)
-	private String deprecationDate;
-
-	@Column(nullable = false, length = 30)
-	private int hypeLevel;
-
-	public JavaScriptFramework(String name, String version, String deprecationDate, int hypeLevel) {
+	public JavaScriptFramework(String name) {
 		this.name = name;
-		this.version = version;
-		this.deprecationDate = deprecationDate;
-		this.hypeLevel = hypeLevel;
 	}
 }

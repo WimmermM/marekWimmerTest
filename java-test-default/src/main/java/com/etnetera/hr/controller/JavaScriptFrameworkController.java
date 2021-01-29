@@ -2,6 +2,7 @@ package com.etnetera.hr.controller;
 
 import com.etnetera.hr.in.JavaScriptFrameworkRequest;
 import com.etnetera.hr.out.FrameworkResponse;
+import com.etnetera.hr.out.FrameworkWrapperObject;
 import com.etnetera.hr.service.JavaScriptFrameworkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,25 +37,26 @@ public class JavaScriptFrameworkController extends EtnRestController {
 	}
 
 	@PostMapping(path = "/frameworks/add")
-	public FrameworkResponse addFramework (@RequestBody JavaScriptFramework request) {
-		service.addFramework(request);
-		return new FrameworkResponse(HttpStatus.CREATED, "Framework " + request.toString() + " Saved");
+	public FrameworkResponse addFramework (@RequestBody JavaScriptFrameworkRequest request) {
+		FrameworkWrapperObject response = service.addFramework(request);
+		return new FrameworkResponse<JavaScriptFramework>(HttpStatus.CREATED.value(), response.getMessage(), response.getFramework());
 	}
 
-	@PostMapping(path = "/frameworks/find/{id}")
+	@GetMapping(path = "/frameworks/find/{id}")
 	public FrameworkResponse findFrameworkById(@PathVariable Long id){
-		return new FrameworkResponse(HttpStatus.OK,service.findById(id).toString());}
+		FrameworkWrapperObject response = service.findById(id);
+		return new FrameworkResponse(HttpStatus.OK.value(), response.getMessage(), response.getFramework());}
 
 
 	@DeleteMapping(path = "/frameworks/delete/{id}")
-	public FrameworkResponse DeleteFramework(@PathVariable Long id) {
-		service.deleteFramework(id);
-		return new FrameworkResponse(HttpStatus.OK,"Framework Deleted " + service.findById(id).toString());
+	public FrameworkResponse deleteFramework(@PathVariable Long id) {
+		FrameworkWrapperObject response = service.deleteFramework(id);
+		return new FrameworkResponse(HttpStatus.OK.value(),response.getMessage(), response.getFramework());
 	}
 
-	@PutMapping(path = "/frameworks/delete/{id}")
-	public FrameworkResponse updateFramework(@PathVariable Long id, @RequestBody JavaScriptFramework framework) {
-		service.updateFramework(id, framework);
-		return new FrameworkResponse(HttpStatus.OK,"Framework Updated " + service.findById(id).toString());
+	@PutMapping(path = "/frameworks/update/{id}")
+	public FrameworkResponse updateFramework(@PathVariable Long id, @RequestBody JavaScriptFrameworkRequest request) {
+		FrameworkWrapperObject response = service.updateFramework(id, request);
+		return new FrameworkResponse(HttpStatus.OK.value(), response.getMessage(), response.getFramework());
 	}
 }
