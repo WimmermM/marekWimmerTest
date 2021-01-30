@@ -36,7 +36,8 @@ public class JavaScriptFrameworkService {
         }
         JavaScriptFramework frameworkToSave = saveFramework(request);
         saveVersion(frameworkToSave, request);
-        return createResponse("Framework saved", frameworkToSave);
+        Optional<JavaScriptFramework> savedFramework = repository.findById(frameworkToSave.getId());
+        return createResponse("Framework saved", savedFramework.get());
     }
 
     public FrameworkWrapperObject updateFramework (Long id, JavaScriptFrameworkRequest request) {
@@ -55,10 +56,12 @@ public class JavaScriptFrameworkService {
                 version.setDeprecationDate(request.getDeprecationDate());
                 version.setHypeLevel(request.getHypeLevel());
                 frameworkVersionRepository.save(version);
-                return createResponse("Framework version changed", framework);
+                 Optional<JavaScriptFramework> updatedframework = repository.findById(framework.getId());
+                return createResponse("Framework version changed", updatedframework.get());
             } else {
                 saveVersion(framework, request);
-                return createResponse("Added new version " + request.getVersion() + "to framework " + request.getName(), framework);
+                Optional<JavaScriptFramework> updatedframework = repository.findById(framework.getId());
+                return createResponse("Added new version " + request.getVersion() + "to framework " + request.getName(), updatedframework.get());
             }
         }
         return createResponse("Framework with id: " + id + " not found in database", null);
@@ -113,6 +116,6 @@ public class JavaScriptFrameworkService {
     }
 
     private Optional<FrameworkVersion> getExistingVersion (List<FrameworkVersion> versions, String version) {
-        return versions.stream().filter(v -> !v.getVersion().equals(version)).findAny();
+        return versions.stream().filter(v -> v.getVersion().equals(version)).findAny();
     }
 }

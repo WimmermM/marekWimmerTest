@@ -8,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.etnetera.hr.data.FrameworkVersion;
+import com.etnetera.hr.in.JavaScriptFrameworkRequest;
+import com.etnetera.hr.repository.FrameworkVersionRepository;
 import com.etnetera.hr.service.JavaScriptFrameworkService;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -54,35 +56,25 @@ public class JavaScriptFrameworkTests {
 
 	@Autowired
 	private JavaScriptFrameworkRepository repository;
+	private FrameworkVersionRepository versionRepository;
 
 
 	public static JavaScriptFramework framework;
 	public static JavaScriptFramework frameworkInvalid;
-	public static FrameworkVersion version;
+	public static FrameworkVersion frameworkVersion;
+	public static JavaScriptFrameworkRequest request;
 
-	@BeforeClass
-	public static void createVersions(){
-		version = FrameworkVersion.builder()
-				.version("1")
-				.deprecationDate("2")
-				.hypeLevel(1)
-				.build();
-	}
 
 
 	@BeforeClass
 	public static void prepare() {
-		 framework = JavaScriptFramework.builder()
+		 request = JavaScriptFrameworkRequest.builder()
 				 .name("prepare")
+				 .deprecationDate("2")
+				 .hypeLevel(1)
+				 .version("2")
 				 .build();
 	}
-	@BeforeClass
-	public static void prepareInvalidData() {
-	 frameworkInvalid = JavaScriptFramework.builder()
-			 .name("prepare")
-			 .build();
-	}
-
 
 	private void prepareData() throws Exception {
 		JavaScriptFramework react = new JavaScriptFramework("ReactJS");
@@ -125,8 +117,12 @@ public class JavaScriptFrameworkTests {
 
 	@Test
 	public void addFramework() throws Exception {
-		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
-				.andExpect(status().isOk());
+		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message", is("Framework saved")))
+				.andExpect(jsonPath("$.data[0].id", is(1)))
+				.andExpect(jsonPath("$.data[1].name", is("prepare")));
+
 	}
 
 	@Test(expected = NestedServletException.class)
@@ -138,7 +134,16 @@ public class JavaScriptFrameworkTests {
 	public void findFramework() throws Exception {
 		prepareData();
 		mockMvc.perform(post("/frameworks/find/1").contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(3)))
+				.andExpect(jsonPath("$[1].message", is("Framework found")))
+				.andExpect(jsonPath("$[2].data[0].id", is(1)))
+				.andExpect(jsonPath("$[2].data[1].name", is("Mareksdsa")))
+				.andExpect(jsonPath("$[3].data[2].versions", hasSize(4)))
+				.andExpect(jsonPath("$[3].data[2].versions[0].id", is(1)))
+				.andExpect(jsonPath("$[3].data[2].versions[1].version", is("1")))
+				.andExpect(jsonPath("$[3].data[2].versions[2].deprecationDate", is("2")))
+				.andExpect(jsonPath("$[3].data[2].versions[3].hypeLevel", is(1)));
 	}
 
 	@Test
