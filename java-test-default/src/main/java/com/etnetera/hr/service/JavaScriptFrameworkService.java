@@ -3,16 +3,14 @@ package com.etnetera.hr.service;
 import com.etnetera.hr.data.FrameworkVersion;
 import com.etnetera.hr.data.JavaScriptFramework;
 import com.etnetera.hr.in.JavaScriptFrameworkRequest;
-import com.etnetera.hr.out.FrameworkResponse;
 import com.etnetera.hr.out.FrameworkWrapperObject;
-import com.etnetera.hr.repository.FrameworkVersionRepository;
 import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -20,13 +18,13 @@ import java.util.Optional;
 public class JavaScriptFrameworkService {
 
     private final JavaScriptFrameworkRepository repository;
-    private final FrameworkVersionRepository frameworkVersionRepository;
 
 
     public FrameworkWrapperObject addFramework(JavaScriptFrameworkRequest request) {
         Optional<JavaScriptFramework> frameworkExists = repository.findByName(request.getName());
+        JavaScriptFramework framework;
         if (frameworkExists.isPresent()) {
-            JavaScriptFramework framework = frameworkExists.get();
+            framework = frameworkExists.get();
             if (checkIfVersionExist(framework.getVersions(), request.getVersion())) {
                 return createResponse("Framework with name" + request.getName() + "and Version " + request.getVersion() + " already exists!!!", framework);
             } else {
@@ -34,34 +32,33 @@ public class JavaScriptFrameworkService {
                 return createResponse("Added new version " + request.getVersion() + "to framework " + request.getName(), framework);
             }
         }
-        JavaScriptFramework frameworkToSave = saveFramework(request);
-        saveVersion(frameworkToSave, request);
-        Optional<JavaScriptFramework> savedFramework = repository.findById(frameworkToSave.getId());
-        return createResponse("Framework saved", savedFramework.get());
+        framework = saveFramework(request);
+//        saveVersion(frameworkToSave, request);
+//        Optional<JavaScriptFramework> savedFramework = repository.findById(frameworkToSave.getId());
+        return createResponse("Framework saved", framework);
     }
 
     public FrameworkWrapperObject updateFramework (Long id, JavaScriptFrameworkRequest request) {
         Optional<JavaScriptFramework> frameworkToUpdate = repository.findById(id);
+            JavaScriptFramework framework;
         if (frameworkToUpdate.isPresent()){
-            JavaScriptFramework framework = frameworkToUpdate.get();
+            framework = frameworkToUpdate.get();
             Optional<FrameworkVersion> existingVersion = getExistingVersion(framework.getVersions(), request.getVersion());
             if (!frameworkToUpdate.get().getName().equals(request.getName())) {
                 framework.setName(request.getName());
                 repository.save(framework);
-                return createResponse("Framework name changed", framework);
             }
             if (existingVersion.isPresent()) {
                 FrameworkVersion version = existingVersion.get();
                 version.setVersion(request.getVersion());
                 version.setDeprecationDate(request.getDeprecationDate());
                 version.setHypeLevel(request.getHypeLevel());
-                frameworkVersionRepository.save(version);
-                 Optional<JavaScriptFramework> updatedframework = repository.findById(framework.getId());
-                return createResponse("Framework version changed", updatedframework.get());
+                framework.getVersions().add(version);
+                repository.save(framework);
+                return createResponse("Framework changed", framework);
             } else {
                 saveVersion(framework, request);
-                Optional<JavaScriptFramework> updatedframework = repository.findById(framework.getId());
-                return createResponse("Added new version " + request.getVersion() + "to framework " + request.getName(), updatedframework.get());
+                return createResponse("Added new version " + request.getVersion() + "to framework " + request.getName(), framework);
             }
         }
         return createResponse("Framework with id: " + id + " not found in database", null);
@@ -93,7 +90,14 @@ public class JavaScriptFrameworkService {
     private JavaScriptFramework saveFramework(JavaScriptFrameworkRequest request) {
         JavaScriptFramework framework = JavaScriptFramework.builder()
                 .name(request.getName())
+                .versions(new ArrayList<>(0))
                 .build();
+        FrameworkVersion version = FrameworkVersion.builder()
+                .version(request.getVersion())
+                .hypeLevel(request.getHypeLevel())
+                .deprecationDate(request.getDeprecationDate())
+                .build();
+        framework.getVersions().add(version);
         return repository.save(framework);
 
     }
@@ -105,7 +109,8 @@ public class JavaScriptFrameworkService {
                 .deprecationDate(request.getDeprecationDate())
                 .framework(framework)
                 .build();
-        frameworkVersionRepository.save(version);
+        framework.getVersions().add(version);
+        repository.save(framework);
     }
 
     private FrameworkWrapperObject createResponse(String message, JavaScriptFramework framework) {

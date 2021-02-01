@@ -31,4 +31,11 @@ public class FrameworkVersion {
     @JsonIgnore
     private JavaScriptFramework framework;
 
+    public FrameworkVersion(String version, String deprecationDate, int hypeLevel, JavaScriptFramework framework) {
+        this.version = version;
+        this.deprecationDate = deprecationDate;
+        this.hypeLevel = hypeLevel;
+        this.framework = framework;
+    }
+
 }

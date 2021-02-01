@@ -32,7 +32,7 @@ public class JavaScriptFramework {
 	@Column(nullable = false, length = 30)
 	private String name;
 
-	@OneToMany(mappedBy = "framework", orphanRemoval = true)
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "framework", orphanRemoval = true)
 	private List<FrameworkVersion> versions;
 
 	public JavaScriptFramework(String name) {
