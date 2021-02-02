@@ -24,6 +24,8 @@ import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
+
 
 /**
  * Class used for Spring Boot/MVC based tests.
@@ -44,11 +46,8 @@ public class JavaScriptFrameworkTests {
 
 	@Autowired
 	private JavaScriptFrameworkRepository repository;
-	@Autowired
-	private FrameworkVersionRepository versionRepository;
 
 
-	public static JavaScriptFramework framework;
 	public static JavaScriptFrameworkRequest request;
 
 
@@ -70,9 +69,20 @@ public class JavaScriptFrameworkTests {
 		repository.save(react);
 		repository.save(vue);
 
-		FrameworkVersion version = new FrameworkVersion("1","2",1,react);
+	}
 
-		versionRepository.save(version);
+	private void prepareDataWithVersions() throws  Exception {
+		JavaScriptFramework framework = JavaScriptFramework.builder()
+				.name("Test")
+				.versions(new ArrayList<>(0))
+				.build();
+		FrameworkVersion version =  FrameworkVersion.builder()
+				.version("1")
+				.deprecationDate("2")
+				.hypeLevel(3)
+				.build();
+		framework.getVersions().add(version);
+		repository.save(framework);
 	}
 
 	@Test
@@ -105,45 +115,78 @@ public class JavaScriptFrameworkTests {
 		
 	}
 
-
 	@Test
 	public void addFramework() throws Exception {
 		mockMvc.perform(post("/frameworks/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(request)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("message", is("Framework saved")))
+				.andExpect(jsonPath("message", is("Framework id: 1 created")))
 				.andExpect(jsonPath("data.id", is(1)))
-				.andExpect(jsonPath("data.name", is("prepare")));
+				.andExpect(jsonPath("data.name", is("prepare")))
+				.andExpect(jsonPath("data.versions", hasSize(1)))
+				.andExpect(jsonPath("data.versions[0].id", is(1)))
+				.andExpect(jsonPath("data.versions[0].version", is("2")))
+				.andExpect(jsonPath("data.versions[0].deprecationDate", is("2")))
+				.andExpect(jsonPath("data.versions[0].hypeLevel", is(1)));
 
 	}
 
 	@Test
 	public void findFramework() throws Exception {
-		prepareData();
 		mockMvc.perform(get("/frameworks/find/1").contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("message", is("Framework found")))
+				.andExpect(jsonPath("message", is("Framework id: 1 found")))
 				.andExpect(jsonPath("data.id", is(1)))
-				.andExpect(jsonPath("data.name", is("ReactJS")))
-				.andExpect(jsonPath("data.versions", hasSize(1)))
+				.andExpect(jsonPath("data.name", is("Test")))
 				.andExpect(jsonPath("data.versions[0].id", is(1)))
-				.andExpect(jsonPath("data.versions[0].version", is("1")))
+				.andExpect(jsonPath("data.versions[0].version", is("2")))
 				.andExpect(jsonPath("data.versions[0].deprecationDate", is("2")))
 				.andExpect(jsonPath("data.versions[0].hypeLevel", is(1)));
 	}
 
 	@Test
-	public void updateFramework() throws Exception {
-		framework.setName("testUpdate");
-		mockMvc.perform(put("/frameworks/delete/1").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
+	public void findFrameworkNotFound() throws Exception {
+		prepareDataWithVersions();
+		mockMvc.perform(get("/frameworks/find/18").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("message", is("Framework name changed")))
+				.andExpect(jsonPath("message", is("Framework id: 18 not found")));
+	}
+
+	@Test
+	public void updateFrameworkName() throws Exception {
+		prepareData();
+		mockMvc.perform(put("/frameworks/update/1").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("message", is("Framework id: 1 updated")))
 				.andExpect(jsonPath("data.id", is(1)))
-				.andExpect(jsonPath("data.name", is("ReactJS")))
+				.andExpect(jsonPath("data.name", is("prepare")))
 				.andExpect(jsonPath("data.versions", hasSize(1)))
 				.andExpect(jsonPath("data.versions[0].id", is(1)))
-				.andExpect(jsonPath("data.versions[0].version", is("1")))
+				.andExpect(jsonPath("data.versions[0].version", is("2")))
 				.andExpect(jsonPath("data.versions[0].deprecationDate", is("2")))
 				.andExpect(jsonPath("data.versions[0].hypeLevel", is(1)));
+	}
+
+	@Test
+	public void updateFrameworkVersion() throws Exception {
+		prepareDataWithVersions();
+		request.setName("Test");
+		mockMvc.perform(put("/frameworks/update/1").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("message", is("Framework id: 1 updated")))
+				.andExpect(jsonPath("data.id", is(1)))
+				.andExpect(jsonPath("data.name", is("Test")))
+				.andExpect(jsonPath("data.versions", hasSize(1)))
+				.andExpect(jsonPath("data.versions[0].id", is(2)))
+				.andExpect(jsonPath("data.versions[0].version", is("2")))
+				.andExpect(jsonPath("data.versions[0].deprecationDate", is("2")))
+				.andExpect(jsonPath("data.versions[0].hypeLevel", is(1)));
+	}
+
+	@Test
+	public void updateFrameworkNotFound() throws Exception {
+		mockMvc.perform(put("/frameworks/update/1").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("message", is("Framework id: 1 not found")));
 	}
 
 	@Test
@@ -151,11 +194,11 @@ public class JavaScriptFrameworkTests {
 		prepareData();
 		mockMvc.perform(delete("/frameworks/delete/1").contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath ("message", is("Framework Deleted")));
+				.andExpect(jsonPath ("message", is("Framework id: 1 deleted")));
 
 		mockMvc.perform(delete("/frameworks/delete/4").contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath ("message", is("Framework with id: 4 not found in database")));
+				.andExpect(jsonPath ("message", is("Framework id: 4 not found")));
 	}
 
 }

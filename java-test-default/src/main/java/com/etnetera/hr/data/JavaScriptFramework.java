@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -14,7 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Simple data entity describing basic properties of every JavaScript framework.
- * 
+ *
  * @author Etnetera
  *
  */
@@ -32,10 +33,16 @@ public class JavaScriptFramework {
 	@Column(nullable = false, length = 30)
 	private String name;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "framework", orphanRemoval = true)
+	@OneToMany(mappedBy = "framework", cascade = CascadeType.ALL)
+	@Cascade(org.hibernate.annotations.CascadeType.ALL)
 	private List<FrameworkVersion> versions;
 
 	public JavaScriptFramework(String name) {
 		this.name = name;
+	}
+
+	public void addVersion(FrameworkVersion version) {
+		version.setFramework(this);
+		versions.add(version);
 	}
 }

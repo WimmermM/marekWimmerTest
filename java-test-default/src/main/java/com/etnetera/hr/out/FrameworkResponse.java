@@ -1,9 +1,9 @@
 package com.etnetera.hr.out;
 
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.http.HttpStatus;
+
 
 @Data
 @AllArgsConstructor
@@ -11,6 +11,7 @@ public class FrameworkResponse<T> {
 
     private int statusCode;
     private String message;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
 
 

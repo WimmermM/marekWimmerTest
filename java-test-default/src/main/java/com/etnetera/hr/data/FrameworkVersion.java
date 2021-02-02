@@ -26,7 +26,7 @@ public class FrameworkVersion {
     @Column(nullable = false, length = 30)
     private int hypeLevel;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "framework_id")
     @JsonIgnore
     private JavaScriptFramework framework;
